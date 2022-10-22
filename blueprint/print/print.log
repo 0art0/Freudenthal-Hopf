@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999994 (TeX Live 2022/Arch Linux) (preloaded format=xelatex 2022.5.3)  21 OCT 2022 15:29
+This is XeTeX, Version 3.141592653-2.6-0.999994 (TeX Live 2022/Arch Linux) (preloaded format=xelatex 2022.5.3)  22 OCT 2022 18:20
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -894,7 +894,8 @@ Package: thm-amsthm 2020/08/01 v0.72
 LaTeX Info: Redefining \rmfamily on input line 2.
 LaTeX Info: Redefining \sffamily on input line 2.
 LaTeX Info: Redefining \ttfamily on input line 2.
-)
+ (../print/introduction.aux) (../print/ends.aux)
+(../print/functoriality.aux) (../print/freudenthal_hopf.aux))
 \openout1 = `print.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
@@ -1026,7 +1027,43 @@ LaTeX Font Info:    Font shape `TU/LatinModernMath(3)/m/n' will be
 (Font)              scaled to size 5.99936pt on input line 35.
 [1
 
-] (./content.tex)
+] (./content.tex
+\openout2 = `introduction.aux'.
+
+ (./introduction.tex) [1
+
+
+]
+\openout2 = `ends.aux'.
+
+ (./ends.tex
+Chapter 1.
+) [2
+
+
+
+
+]
+\openout2 = `functoriality.aux'.
+
+ (./functoriality.tex
+Chapter 2.
+) [3
+
+
+
+
+]
+\openout2 = `freudenthal_hopf.aux'.
+
+ (./freudenthal_hopf.tex
+Chapter 3.
+) [4
+
+
+
+
+])
 The property list \polyglossia@langsetup contains the pairs (without outer
 braces):
 >  {latex/script}  =>  {latin}
@@ -1113,14 +1150,15 @@ The property list \__xpg_alias contains the pairs (without outer braces):
 LaTeX Info: Redefining \rmfamily on input line 2.
 LaTeX Info: Redefining \sffamily on input line 2.
 LaTeX Info: Redefining \ttfamily on input line 2.
-) ) 
+ (../print/introduction.aux) (../print/ends.aux)
+(../print/functoriality.aux) (../print/freudenthal_hopf.aux)) ) 
 Here is how much of TeX's memory you used:
- 24713 strings out of 476156
- 538389 string characters out of 5814964
+ 24843 strings out of 476156
+ 542229 string characters out of 5814964
  1245157 words of memory out of 5000000
- 45112 multiletter control sequences out of 15000+600000
- 471726 words of font info for 56 fonts, out of 8000000 for 9000
+ 45207 multiletter control sequences out of 15000+600000
+ 471766 words of font info for 61 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  98i,6n,114p,458b,2774s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on ../print/print.pdf (1 page).
+Output written on ../print/print.pdf (5 pages).
