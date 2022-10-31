@@ -3,3 +3,43 @@
 \section{Introduction}
 
 Sufficiently nice maps between graphs can induce maps between their corresponding sets of ends. This chapter describes an approach to formalising this functoriality in terms of a notion of \emph{reachability} of points in a graph.
+
+\section{Functoriality of ends}
+\label{sec:ends_functoriality}
+
+Given graphs $G$ and $G'$ on sets $V$ and $V'$, the general strategy for constructing an end on $G'$ given an end on $G$ and a ``sufficiently nice'' map $f : V \to V'$ is as follows:
+pick a finite subset $L$ of $V'$, somehow map it back to a finite set $K$ in $V$, obtain a connected component $C$ in the complement of $K$ from the end on $G$, and use $f$ to map it to a connected component of $G'$ in the complement of $L$.
+
+Observe that the set $K$ above must be contained in the pre-image of $L$ under $f$, because otherwise there is no guarantee that the image of $C$ under $f$ is disjoint from $L$. Therefore $K$ must be a finite subset of $f^{-1}(L)$. It would be a convenient situation for $f^{-1}(L)$ to itself be a finite subset of $V$ whenever $L$ is a finite subset of $V'$, since one could then take $K = f^{-1}(L)$ and hence the choice of $K$ will depend on nothing but $f$. This motivates the following definition:
+
+\begin{definition}
+  \label{def:cofinite_map}
+  A function $f : V \to W$ is said to be \emph{cofinite} whenever the pre-images of finite subsets of $W$ under $f$ are finite subsets of $V$.
+\end{definition}
+
+
+Likewise, we require $f$ to map $C$ to a connected component outside $L$. The following definitions and theorem give conditions on a map to induce a map between connected components.
+
+\begin{definition}
+  \label{def:reachable}
+  Given a graph $G$ on a vertex set $V$, two points $a$ and $b$ of $V$ are \emph{reachable} if there exists a path between them.
+\end{definition}
+
+\begin{definition}
+  \label{def:weak_graph_hom}
+  A \emph{weak homomorphism} between two graphs $G$ and $G'$ is a function $f : G \to G'$ that sends reachable pairs of points to reachable pairs of points.
+\end{definition}
+
+\begin{theorem}
+  \label{thm:weak_hom_iff_conn_map}
+  A map $f : G \to G'$ between graphs induces a map between their connected components iff and only if $f$ is a weak homomorphism.
+\end{theorem}
+
+\begin{proof}
+In the forward direction, suppose $f$ induces a map between components, and consider two points $a, b \in V$. Then if $a$ and $b$ are reachable, there is a unique component $C$ of $G$ that contains both these points. By assumption, this is mapped to a component $C'$ of $G'$. Since the image of $f$ on $C$ is contained in $C'$, it follows that $f(a)$ and $f(b)$ are both in the same connected component $C'$, i.e., $f(a)$ and $f(b)$ are reachable.
+
+Conversely, suppose $f$ is a weak homomorphism and $C$ is a connected component of $G$. To define a function from the components of a graph, it suffices to define a function on the vertices and then show that vertices in the same component have the same output. Taking the function on the vertices to be $f$, we see that the required condition is precisely that $f$ is a weak homomorphism.
+\end{proof}
+
+The definitions \ref{def:cofinite_map} and \ref{def:weak_graph_hom} together with the theorem \ref{thm:weak_hom_iff_conn_map} show that a \emph{cofinite weak homomorphism} is the kind of ``sufficiently nice'' map required for functoriality. The general plan from the beginning of \ref{sec:ends_functoriality} now looks like:
+pick a finite subset $L$ of $V'$, consider its pre-image $f^{-}(L)$ which is finite as $f$ is cofinite, consider the connected component $C$ in the complement of $f^{-1}(L)$ from the end on $G$, and map it to the unique component in $G'$ determined by the weak homomorphism $f$.

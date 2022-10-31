@@ -73,3 +73,14 @@ The following definition of ends is \href{https://leanprover.zulipchat.com/#narr
 
   The \emph{Ends} of a graph $G$ are the sections of the functor \ref{def:ends_functor} corresponding to $G$.
 \end{definition}
+
+An alternative definition, which is easier to work with in practice, uses
+\begin{definition}
+  \label{def:inf_ends_functor}
+  \lean{ComplInfComp}
+  \leanok
+
+  For a graph $G$ on a vertex set $V$, let \emph{ComplInfComp} be the contravariant functor from \ref{def:fin_incl} to the category of types assigning to each finite set the set of \emph{infinite} connected components in its complement. The morphisms are mapped according to \ref{def:back_comp_map}.
+\end{definition}
+
+It turns out that restricting to just the infinite components does not change the sections.
