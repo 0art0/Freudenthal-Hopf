@@ -1,3 +1,75 @@
-\chapter{Ends}
+\chapter{Ends}\label{chap:ends}
 
-This chapter outlines an approach to defining ends of a graph. For concreteness, we restrict the definition of ends to just graphs, although it the concept of ends can also be formulated for arbitrary topological spaces.
+\section{Introduction}
+\label{sec:ends_intro}
+
+This chapter outlines an approach to defining \emph{ends} of a graph. For concreteness, we restrict the definition of ends to just graphs, although the concept of ends can also be formulated for arbitrary topological spaces.
+
+Intuitively, the \textit{ends} of a space are meant to capture the distinct ways in which the space approaches infinity.
+
+\section{Defining \emph{Ends}}
+\label{sec:ends_def}
+
+This idea is often formally captured in the following way:
+\begin{definition}[Ends]
+  \label{def:ends}
+  Let $G$ be a graph on a vertex set $V$.
+
+  An \emph{end} of $G$ is defined as a function assigning to each finite subset of $V$ a connected component in its complement, subject to a consistency condition that the component assigned to any subset of a finite set $K$ must contain the component assigned to $K$.
+\end{definition}
+
+\begin{remark}
+  \label{def:back_comp_map}
+  If $K$ and $L$ are two subsets of the vertex set of a graph with $K \subset L$, any non-empty connected component in the complement of $L$ determines a unique connected component in the complement of $K$ that contains it.
+
+  This follows from the fact that any non-empty connected set of a graph is contained in a unique connected component.
+\end{remark}
+
+For the purposes of formalisation, a Category theoretic description of \ref{def:ends} turns out to be more suitable, as several properties of ends can then be deduced from highly general results in Category theory that are present in Lean's mathematics library \texttt{mathlib}.
+
+\begin{definition}
+  \label{def:fin_incl}
+  \lean{fin_incl}
+  \leanok
+  For a type $V$, let \emph{FinIncl} be the directed system of finite subsets of $V$ considered a category under inclusion.
+\end{definition}
+
+\begin{definition}[Ends functor]
+  \label{def:ends_functor}
+  \lean{ComplComp}
+  \leanok
+
+  For a graph $G$ on a vertex set $V$, let \emph{ComplComp} be the contravariant functor from \ref{def:fin_incl} to the category of types assigning to each finite set the set of connected components in its complement. The morphisms are mapped according to \ref{def:back_comp_map}.
+\end{definition}
+
+\begin{remark}
+  \label{def:finite_nonempty_conditions}
+  When the graph $G$ is infinite, there is at least one connected component outside each finite set of vertices $K$.
+
+  When the graph is locally finite, the number of connected components outside each finite set $K$ is finite, since the connected components cover the \emph{boundary} of $K$, which is finite when the graph is locally finite.
+
+  Together, these conditions ensure that \ref{def:ends_functor} assigns to each object in \ref{def:fin_incl} a non-empty and finite type.
+
+  It follows from general category theory that the limit of this inverse system exists and is non-empty.
+\end{remark}
+
+\begin{definition}[Sections of a Functor]
+  \label{def:functor_sections}
+  The \emph{sections} of a functor $F$ from a category $J$ to the category of types are the choices of a point $u(j) \in F(j)$ for each $j \in J$ such that $F(f)(u(j)) = u(j')$, for each $f : j \to j'$.
+\end{definition}
+
+\begin{remark}
+  The sections of a functor \ref{def:functor_sections} are closely related to limits in Category theory. The limit of a digram always exists in the category of types.
+
+  Suppose $L$ is the limit of a diagram $J$ in the category of types. For any $l \in L$, one can construct a section of $J$ by assigning to each $j \in J$ the image of $l$ under the projection to $j$. Conversely, every section determines a consistent assignment of objects in the diagram, and hence an element of the limit $L$.
+\end{remark}
+
+The following definition of ends is due to Kyle Miller \url{https://leanprover.zulipchat.com/#narrow/stream/116395-maths/topic/Geometric.20group.20theory/near/290624806}:
+
+\begin{definition}[Ends]
+  \label{def:ends_cat}
+  \lean{Ends}
+  \leanok
+
+  The \emph{Ends} of a graph $G$ are the sections of the functor \ref{def:ends_functor} corresponding to $G$.
+\end{definition}
