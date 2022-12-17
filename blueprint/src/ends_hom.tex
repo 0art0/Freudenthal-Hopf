@@ -1,0 +1,74 @@
+\chapter{Functoriality of Ends}
+
+\section{Functoriality}
+
+Consider two graphs $G$ and $G'$ with vertex sets $V$ and $V'$.
+
+Given a graph homomorphism $\phi : G \to G'$, we would like to capture conditions on $\phi$ for required to obtain a map between the ends of the graphs.
+
+The definition of \emph{ends} of a graph $G$ used here is as the sections of a functor from the poset of finite subsets of $V$ to the category of sets sending each finite subset $K$ to a connected component in its complement.
+
+The rough strategy for inducing a map between ends is as follows:
+\begin{enumerate}
+    \item Consider a \emph{finite} set $L \subset V'$ in the target.
+    \item Use $\phi$ to produce a corresponding \emph{finite} subset $K \subset V$.
+    \item An end $e$ of $G$ assigns to $K$ a connected component $C$ in the complement of $K$.
+    \item If $\phi$ is nice enough, the image of $C$ under $\phi$ is contained in a unique component $C'$ of $G'$.
+    \item The end of $G'$ corresponding to $e$ is the one sending $L$ to $C'$.
+\end{enumerate}
+
+\section{Cofinite maps}
+
+\begin{definition}
+    \label{def:cofinite_map}
+    A function $f : V \to W$ is said to be \emph{cofinite} whenever the pre-images of finite subsets of $W$ under $f$ are finite subsets of $V$.
+\end{definition}
+  
+When a map $\phi$ between graphs is cofinite, the second step in the strategy above can be to just set $K := \phi^{-1}(L)$.
+
+We will focus on the case of cofinite functions inducing a map between ends. It turns out, though it will not be proved here, that any function inducing a map between ends in this way is necessarily cofinite.
+
+\section{Weak homomorphisms}
+
+\begin{definition}
+    \label{def:reachable}
+    Given a graph $G$ on a vertex set $V$, two points $a$ and $b$ of $V$ are \emph{reachable} if there exists a path between them.
+  \end{definition}
+  
+  \begin{definition}
+    \label{def:weak_graph_hom}
+    A \emph{weak homomorphism} between two graphs $G$ and $G'$ is a function $f : G \to G'$ that sends reachable pairs of points to reachable pairs of points.
+  \end{definition}
+  
+  \begin{theorem}
+    \label{thm:weak_hom_iff_conn_map}
+    A map $f : G \to G'$ between graphs induces a map between their connected components iff and only if $f$ is a weak homomorphism.
+  \end{theorem}
+  
+  \begin{proof}
+  \texttt{sorry}
+  \end{proof}
+  
+  In the fourth step of the strategy, it suffices if $\phi : (G \backslash f^{-1}(L)) \to (G' \backslash L)$ is a weak homomorphism for each finite $L \subset V'$.
+
+\section{Reduction}
+
+This section gives a convenient description of maps that induce maps between ends, in the case where the target is locally-finite.
+
+\begin{theorem}
+Suppose $\phi : G \to G'$ is a cofinite function between \textbf{locally-finite} graphs such that $\phi : (G \backslash f^{-1}(L)) \to (G' \backslash L)$ is a weak homomorphism for each finite $L \subset V'$. Then $\phi$ is a homomorphism from $G$ to $G'$.
+\end{theorem}
+
+\begin{proof}
+To prove that $\phi$ is a graph homomorphism, we need to show that if two vertices $a, b \in G$ are adjacent, then $\phi(a), \phi(b) \in G'$ are adjacent. It suffices to show that there is a path between $\phi(a)$ and $\phi(b)$ that involves no additional vertices of $G'$.
+
+Motivated by this, we define $L := (N(\phi(a)) \cup N(\phi(b))) \backslash \{\phi(a), \phi(b)\}$ ($N$ denotes the neighbourhood). When the graph $G'$ is locally finite, this set is a finite subset of $V'$. The construction ensures that any path between $\phi(a)$ and $\phi(b)$ in $G' \backslash L$ is necessarily an edge, as these vertices have no other neighbours.
+
+In the graph $G \backslash \phi^{-1}(L)$, $a$ and $b$ remain adjacent if they were initially adjacent in $G$. By the assumption, $\phi : (G \backslash \phi^{-1}(L)) \to (G' \backslash L)$ is a weak homomorphism. We have that $a$ and $b$ are reachable in $G \backslash \phi^{-1}(L)$, as they are adjacent. Therefore there is a path between $\phi(a)$ and $\phi(b)$ in $G \backslash \phi^{-1}(L)$, by the weak homomorphism property. However, the construction of $L$ forces $a$ and $b$ to be adjacent vertices in $G'$.
+
+This shows that $\phi$ maps adjacent vertices to adjacent vertices, or in other words, is a graph homomorphism.
+\end{proof}
+
+
+
+
