@@ -2,3 +2,4 @@
 /_target
 /_target/*
 /leanpkg.path
+*.el

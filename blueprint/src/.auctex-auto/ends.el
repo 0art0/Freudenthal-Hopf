@@ -11,6 +11,7 @@
     "def:ends_functor"
     "def:finite_nonempty_conditions"
     "def:functor_sections"
-    "def:ends_cat"))
+    "def:ends_cat"
+    "def:inf_ends_functor"))
  :latex)
 
