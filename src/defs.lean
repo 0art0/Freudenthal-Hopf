@@ -18,12 +18,22 @@ assigning, to each finite set of vertices, the connected components of its compl
 
 
 universes u
-variables {V : Type u} (G : simple_graph V) (K L L' M : set V)
+variables {V V' : Type*} (G : simple_graph V) (K L L' M : set V)
 
 open classical
 
 noncomputable theory
 local attribute [instance] prop_decidable
+
+def induce_out (f : V → V')
+  {K : set V} {L : set V'} (h : f⁻¹' L ⊆ K) :
+  Kᶜ → Lᶜ :=
+    λ ⟨v, hKc⟩, ⟨f v, λ hfvL, hKc (h hfvL)⟩
+
+@[simp] lemma induce_out_eq (f : V → V')
+  {K : set V} {L : set V'} (h : f⁻¹' L ⊆ K) :
+  ∀ v : Kᶜ, ↑(induce_out f h v) = f ↑v :=
+  λ ⟨_, _⟩, rfl
 
 namespace simple_graph
 
@@ -47,6 +57,16 @@ by { ext ⟨_, _⟩, refl, }
 lemma out_hom_injective {K} {L} (h : K ⊆ L) : function.injective (G.out_hom h) :=
 by { rintros ⟨v, _⟩ ⟨w, _⟩ e,
     simpa only [out_hom, subtype.mk_eq_mk, rel_hom.coe_fn_mk] using e, }
+
+def induce_out_hom 
+  {G : simple_graph V} {G' : simple_graph V'} (φ : G →g G')
+  {K : set V} {L : set V'} (h : φ⁻¹' L ⊆ K) :
+    G.out K →g G'.out L :=
+    ⟨induce_out φ h, by {
+      intros _ _ hadj,
+      simp at hadj ⊢,
+      apply φ.map_rel,
+      assumption, }⟩
 
 end out
 
@@ -243,7 +263,7 @@ instance finset_directed : is_directed (finset V) (≥) :=
 /--
 The functor assigning a finite set in `V` to the set of connected components in its complement.
 -/
-def comp_out_functor : finset V ⥤ Type u :=
+def comp_out_functor : finset V ⥤ Type* :=
 { obj := λ K, G.comp_out K,
   map := λ _ _ f C, C.hom (le_of_hom f),
   map_id' := λ K, funext $ λ C, C.hom_refl,
@@ -257,7 +277,7 @@ def «end» := (comp_out_functor G).sections
 The functor assigning to a finite set in `V` the set of _infinite_ connected components in its
 complement.
 -/
-def inf_comp_out_functor : finset V ⥤ Type u :=
+def inf_comp_out_functor : finset V ⥤ Type* :=
 { obj := λ K, { C : G.comp_out K | C.inf},
   map := λ K L f, set.maps_to.restrict _ _ _
                     (λ (C : G.comp_out K) (Cinf : C.inf), C.hom_inf (le_of_hom f) Cinf),
