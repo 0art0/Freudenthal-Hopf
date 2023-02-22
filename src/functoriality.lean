@@ -9,12 +9,6 @@ variables {V V' V'' : Type u} (G : simple_graph V) (G' : simple_graph V') (G'' :
 
 open simple_graph
 
--- TODO Implement these and put them in a correct file
--- constant simple_graph.edist (G : simple_graph V) : V → V → ℕ∞
--- constant simple_graph.edist_triangle (u v w : V) : G.edist u v ≤ G.edist u w + G.edist w v
-constant simple_graph.edist_hom (φ : G →g G') : ∀ x y : V, G'.edist (φ x) (φ y) ≤ G.edist x y
-constant simple_graph.reachable_iff_edist_lt_top (u v : V) : G.reachable u v ↔ G.edist u v < ⊤
-
 @[reducible]
 def coarse_lipschitz_with (K : ℕ∞) (C : ℕ) (f : V → V') :=
   ∀ ⦃x y : V⦄, ∀ a : ℕ∞, G.edist x y < a → G'.edist (f x) (f y) < K * a + C
@@ -33,7 +27,7 @@ protected theorem id : coarse_lipschitz_with G G 1 0 id := by {
 
 theorem hom (φ : G →g G') : coarse_lipschitz_with G G' 1 0 φ := by {
   intro,
-  simp [coarse_lipschitz_with, simple_graph.edist_hom],
+  simp [coarse_lipschitz_with, simple_graph.hom.edist_le],
   sorry, -- transitivity
 }
 
@@ -63,7 +57,7 @@ theorem infty_iff (f : V → V') {C : ℕ} :
       intros K n,
       sorry -- needs missing `enat` lemmas
       },
-    simp_rw [simple_graph.reachable_iff_edist_lt_top,
+    simp_rw [simple_graph.reachable_iff_edist_ne_top,
       coarse_lipschitz_with, this],
     sorry -- should be easy enough from here
   }
@@ -237,7 +231,7 @@ def coarse_equal.end_equal [decidable_eq V] {f g : V → V'} {k : ℕ∞}
     refine C.ind _,
     intros v hv,
     dsimp [coarse_lipschitz.comp_map],
-    rw [simple_graph.connected_component.eq, simple_graph.reachable_iff_edist_lt_top],
+    rw [simple_graph.connected_component.eq, simple_graph.reachable_iff_edist_ne_top],
     dsimp [induce_out],
     have hyp := (coarse_equal.of_coarse_close fcoarse gcoarse close).induced_coarse_equal L.unop
       ⟨v, sorry⟩,
