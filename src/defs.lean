@@ -18,23 +18,110 @@ assigning, to each finite set of vertices, the connected components of its compl
 -/
 
 universes u
-variables {V : Type u} (G : simple_graph V) (K L L' M : set V)
+variables {V V' V'' : Type u} (G : simple_graph V) (G' : simple_graph V') (K L L' M : set V)
 
 open classical
 
 noncomputable theory
 local attribute [instance] prop_decidable
 
+
+protected def simple_graph.connected_component.lift_adj {G : simple_graph V} {β : Sort*} (f : V → β)
+  (h : ∀ (v w : V), G.adj v w → f v = f w) : G.connected_component → β :=
+quot.lift f (λ v w (h' : G.reachable v w), h'.elim $ λ vw, by
+  { induction vw, refl, rw ←vw_ih ⟨vw_p⟩, exact h _ _ vw_h, } )
+
+def induce_out (f : V → V')
+  {K : set V} {L : set V'} (h : f⁻¹' L ⊆ K) :
+  Kᶜ → Lᶜ :=
+    λ ⟨v, hKc⟩, ⟨f v, λ hfvL, hKc (h hfvL)⟩
+
+@[simp] lemma induce_out_eq (f : V → V')
+  {K : set V} {L : set V'} (h : f⁻¹' L ⊆ K) :
+  ∀ v : Kᶜ, ↑(induce_out f h v) = f ↑v :=
+  λ ⟨_, _⟩, rfl
+
+
 namespace simple_graph
+
+namespace walk
+
+-- Some of this stuff is in `mathlib` already, but is being inserted here to get the code to compiles
+
+/--
+Given a set `S` and a walk `w` from `u` to `v` such that `u ∈ S` but `v ∉ S`,
+there exists a dart in the walk whose start is in `S` but whose end is not.
+-/
+lemma exists_boundary_dart
+  {u v : V} (p : G.walk u v) (S : set V) (uS : u ∈ S) (vS : v ∉ S) :
+  ∃ (d : G.dart), d ∈ p.darts ∧ d.fst ∈ S ∧ d.snd ∉ S :=
+begin
+  induction p with _ x y w a p' ih,
+  { exact absurd uS vS },
+  { by_cases h : y ∈ S,
+    { obtain ⟨d, hd, hcd⟩ := ih h vS,
+      exact ⟨d, or.inr hd, hcd⟩ },
+    { exact ⟨⟨(x, y), a⟩, or.inl rfl, uS, h⟩ } }
+end
+
+end walk
+
+section connectivity
+
+/-- The map on connected components induced by a graph homomorphism. -/
+def connected_component.map {G : simple_graph V} {G' : simple_graph V'}
+  (φ : G →g G') (C : G.connected_component) : G'.connected_component :=
+C.lift (λ v, G'.connected_component_mk (φ v)) $ λ v w p _,
+  connected_component.eq.mpr (p.map φ).reachable
+
+@[simp] lemma connected_component.map_id {G : simple_graph V} (C : G.connected_component) : 
+  C.map hom.id = C := by { refine C.ind _, intro _, refl, }
+
+@[simp] lemma connected_component.map_comp
+  {G : simple_graph V} {G' : simple_graph V'} {G'' : simple_graph V''}
+  (C : G.connected_component) (φ : G →g G') (ψ : G' →g G'') : (C.map φ).map ψ = C.map (ψ.comp φ) :=
+by { refine C.ind _, intro _, refl, }
+
+end connectivity
 
 section out
 
 /-- The graph induced by removing `K` -/
 @[reducible] def out := G.induce $ Kᶜ
 
+/--
+The graph obtained by successively removing two sets is isomorphic to
+the graph obtained by removing the union of the sets.
+-/
+def out_out : (G.out K).out (subtype.val⁻¹' L) ≃g G.out (K ∪ L) :=
+{ to_fun := λ vv, ⟨ vv.val.val, λ h, h.by_cases vv.val.prop vv.prop⟩,
+  inv_fun := λ vv, ⟨ ⟨ vv.val, λ h, vv.prop (or.inl h)⟩, λ h, vv.prop (or.inr h) ⟩,
+  left_inv := by
+    simp only [function.left_inverse, subtype.val_eq_coe, subtype.coe_mk,
+               eq_self_iff_true, set_coe.forall, implies_true_iff],
+  right_inv := by
+    simp only [function.right_inverse, function.left_inverse, eq_self_iff_true,
+               set_coe.forall, implies_true_iff],
+  map_rel_iff' := by
+    simp only [set_coe.forall, implies_true_iff, equiv.coe_fn_mk, comap_adj,
+               function.embedding.coe_subtype, subtype.coe_mk, iff_self] }
+
+/-- A variant of `out_out` that instead considers subsets of `Kᶜ`. -/
+def out_out' (A : set ↥Kᶜ) : (G.out K).out A ≃g G.out (K ∪ (subtype.val '' A)) :=
+begin
+  convert (G.out_out K (subtype.val '' A));
+  exact (set.preimage_image_eq A subtype.val_injective).symm,
+end
+
+def induce_out_hom {G : simple_graph V} {G' : simple_graph V'} (φ : G →g G')
+  {K : set V} {L : set V'} (h : φ⁻¹' L ⊆ K) : G.out K →g G'.out L :=
+  ⟨ induce_out φ h, λ _ _ a, by
+    { simp only [comap_adj, function.embedding.coe_subtype, induce_out_eq] at a ⊢,
+      exact φ.map_rel a, } ⟩
+
 /-- Subsetship induces an obvious map on the induced graphs. -/
 @[reducible] def out_hom {K L} (h : K ⊆ L) : G.out L →g G.out K :=
-{ to_fun := λ ⟨v, hvK⟩, ⟨v, set.compl_subset_compl.mpr h hvK⟩,
+{ to_fun := λ v, ⟨v, set.compl_subset_compl.mpr h v.prop⟩,
   map_rel' := by { rintros ⟨_, _⟩ ⟨_, _⟩, exact id } }
 
 lemma out_hom_refl (K) : G.out_hom (subset_refl K) = hom.id :=
@@ -46,7 +133,7 @@ by { ext ⟨_, _⟩, refl, }
 
 lemma out_hom_injective {K} {L} (h : K ⊆ L) : function.injective (G.out_hom h) :=
 by { rintros ⟨v, _⟩ ⟨w, _⟩ e,
-    simpa only [out_hom, subtype.mk_eq_mk, rel_hom.coe_fn_mk] using e, }
+     simpa only [out_hom, subtype.mk_eq_mk, rel_hom.coe_fn_mk] using e, }
 
 end out
 
@@ -56,7 +143,7 @@ end out
 variables {G} {K L M}
 
 /-- The set of vertices of `G` making up the connected component `C` -/
-@[reducible, simp] def comp_out.supp (C : G.comp_out K) : set V :=
+@[reducible] def comp_out.supp (C : G.comp_out K) : set V :=
 {v : V | ∃ h : v ∈ Kᶜ, connected_component_mk (G.out K) ⟨v, h⟩ = C}
 
 @[ext] lemma comp_out.eq_iff_supp_eq (C D : G.comp_out K) : C = D ↔ C.supp = D.supp :=
@@ -73,10 +160,6 @@ instance : set_like (G.comp_out K) V :=
 { coe := comp_out.supp,
   coe_injective' := λ C D, (comp_out.eq_iff_supp_eq _ _).mpr, }
 
-
-@[simp] lemma comp_out.mem_supp_iff {v : V} {C : comp_out G K} :
-  v ∈ C ↔ ∃ (vK : v ∈ Kᶜ), connected_component_mk (G.out K) ⟨v, vK⟩ = C := iff.rfl
-
 /-- The connected component of `v`. -/
 @[reducible] def comp_out_mk (G : simple_graph V) {v : V} (vK : v ∈ Kᶜ) : G.comp_out K :=
   connected_component_mk (G.out K) ⟨v, vK⟩
@@ -84,33 +167,46 @@ instance : set_like (G.comp_out K) V :=
 lemma comp_out_mk_mem (G : simple_graph V) {v : V} (vK : v ∈ Kᶜ) :
   v ∈ G.comp_out_mk vK := ⟨vK, rfl⟩
 
+lemma comp_out.mem_supp_iff {v : V} {C : comp_out G K} :
+  v ∈ C ↔ ∃ (vK : v ∈ Kᶜ), G.comp_out_mk vK = C := iff.rfl
+
 lemma comp_out_mk_eq_of_adj (G : simple_graph V) {v w : V} (vK : v ∈ Kᶜ) (wK : w ∈ Kᶜ) :
   G.adj v w → G.comp_out_mk vK = G.comp_out_mk wK :=
 by { rw [connected_component.eq], rintro a, apply adj.reachable, exact a }
 
 namespace comp_out
 
-/-- The induced subgraph of `V` given by the vertices of `C`. -/
+def lift {β : Sort*} (f : ∀ ⦃v⦄ (hv : v ∈ Kᶜ), β)
+  (h : ∀ ⦃v w⦄ (hv : v ∈ Kᶜ) (hw : w ∈ Kᶜ) (a : G.adj v w), f hv = f hw) : G.comp_out K → β :=
+connected_component.lift (λ vv, f vv.prop) $ (λ v w p, by
+  { induction p with a u v w a q ih,
+    { rintro _, refl, },
+    { rintro h', exact (h u.prop v.prop a).trans (ih h'.of_cons), } })
+
+lemma ind {β : G.comp_out K → Prop} (f : ∀ ⦃v⦄ (hv : v ∈ Kᶜ), β (G.comp_out_mk hv)) :
+  ∀ (C : G.comp_out K), β C :=
+begin
+  apply connected_component.ind,
+  exact λ ⟨v, vnK⟩, f vnK,
+end
+
+/-- The induced graph on the vertices of `C`. -/
 @[reducible, protected]
-def subgraph (C : comp_out G K) : G.subgraph := (⊤ : G.subgraph).induce (C : set V)
+def coe (C : comp_out G K) : simple_graph (C.supp) := G.induce (C : set V)
 
 lemma coe_inj {C D : G.comp_out K} : (C : set V) = (D : set V) ↔ C = D := set_like.coe_set_eq
 
 @[simp] protected lemma nonempty (C : G.comp_out K) : (C : set V).nonempty :=
-begin
-  refine C.ind (λ v, _),
-  use v,
-  simp only [set.mem_compl_iff, set_like.mem_coe, mem_supp_iff, connected_component.eq,
-             subtype.coe_eta, exists_prop],
-  exact ⟨v.prop, reachable.refl _⟩,
-end
+C.ind (λ v vnK, ⟨v, vnK, rfl⟩)
+
+protected lemma exists_eq_mk (C : G.comp_out K) : ∃ (v) (h : v ∈ Kᶜ), G.comp_out_mk h = C :=
+C.nonempty
+
 
 protected lemma disjoint_right (C : G.comp_out K) : disjoint K C :=
 begin
   rw set.disjoint_iff,
-  rintro v ⟨vK, vC⟩,
-  simp only [mem_supp_iff, set.mem_compl_iff, set_like.mem_coe] at vC,
-  exact vC.some vK,
+  exact λ v ⟨vK, vC⟩, vC.some vK,
 end
 
 lemma not_mem_of_mem {C : G.comp_out K} {c : V} (cC : c ∈ C) : c ∉ K :=
@@ -121,9 +217,7 @@ protected lemma pairwise_disjoint :
 begin
   rintro C D ne,
   rw set.disjoint_iff,
-  rintro u ⟨uC, uD⟩,
-  simp only [set.mem_compl_iff, set_like.mem_coe, mem_supp_iff] at uC uD,
-  exact ne (uC.some_spec.symm.trans uD.some_spec),
+  exact λ u ⟨uC, uD⟩, ne (uC.some_spec.symm.trans uD.some_spec),
 end
 
 lemma eq_of_not_disjoint (C D : G.comp_out K) : ¬ disjoint (C : set V) (D : set V) → C = D :=
@@ -133,13 +227,8 @@ comp_out.pairwise_disjoint.eq
 Any vertex adjacent to a vertex of `C` and not lying in `K` must lie in `C`.
 -/
 lemma mem_of_adj : ∀ {C : G.comp_out K} (c d : V), c ∈ C → d ∉ K → G.adj c d → d ∈ C :=
-begin
-  refine connected_component.ind _,
-  rintros v c d cC dnK cd,
-  have cd' : (G.out K).reachable (⟨c, not_mem_of_mem cC⟩) ⟨d, dnK⟩ := adj.reachable cd,
-  simp only [mem_supp_iff, set.mem_compl_iff, connected_component.eq] at cC ⊢,
-  exact ⟨dnK, cd'.symm.trans cC.some_spec⟩,
-end
+λ C c d ⟨cnK,h⟩ dnK cd,
+  ⟨ dnK, by { rw [←h, connected_component.eq], exact adj.reachable cd.symm, } ⟩
 
 /--
 Assuming `G` is preconnected and `K` not empty, given any connected component `C` outside of `K`,
@@ -148,8 +237,8 @@ there exists a vertex `k ∈ K` adjacent to a vertex `v ∈ C`.
 lemma exists_adj_boundary_pair (Gc : G.preconnected) (hK : K.nonempty) :
   ∀ (C : G.comp_out K), ∃ (ck : V × V), ck.1 ∈ C ∧ ck.2 ∈ K ∧ G.adj ck.1 ck.2 :=
 begin
-  refine connected_component.ind (λ v, _),
-  let C : G.comp_out K := G.comp_out_mk v.prop,
+  refine comp_out.ind (λ v vnK, _),
+  let C : G.comp_out K := G.comp_out_mk vnK,
   let dis := set.disjoint_iff.mp C.disjoint_right,
   by_contra' h,
   suffices : set.univ = (C : set V),
@@ -160,12 +249,8 @@ begin
   by_contradiction unC,
   obtain ⟨p⟩ := Gc v u,
   obtain ⟨⟨⟨x, y⟩, xy⟩, d, xC, ynC⟩ :=
-    p.exists_boundary_dart (C : set V) (G.comp_out_mk_mem v.prop) unC,
-  have : (G.out K).connected_component_mk v = G.comp_out_mk v.prop, by
-    simp only [connected_component.eq, subtype.coe_eta],
-  rw this at h,
-  apply ynC,
-  exact mem_of_adj x y xC (λ (yK : y ∈ K), h ⟨x, y⟩ xC yK xy) xy,
+    p.exists_boundary_dart (C : set V) (G.comp_out_mk_mem vnK) unC,
+  exact ynC (mem_of_adj x y xC (λ (yK : y ∈ K), h ⟨x, y⟩ xC yK xy) xy),
 end
 
 /--
@@ -173,13 +258,8 @@ If `K ⊆ L`, the components outside of `L` are all contained in a single compon
 -/
 @[reducible] def hom (h : K ⊆ L) (C : G.comp_out L) : G.comp_out K := C.map (G.out_hom h)
 
-lemma subset_hom (C : G.comp_out L) (h : K ⊆ L) : (C : set V) ⊆ (C.hom h : set V) :=
-begin
-  rintro c cC,
-  simp only [set.mem_compl_iff, set_like.mem_coe, mem_supp_iff] at cC ⊢,
-  obtain ⟨cL, rfl⟩ := cC,
-  exact ⟨λ h', cL (h h'), rfl⟩,
-end
+lemma subset_hom (C : G.comp_out L) (h : K ⊆ L) : (C : set V) ⊆ (C.hom h : set V) := by
+{ rintro c ⟨cL,rfl⟩, exact ⟨λ h', cL (h h'), rfl⟩ }
 
 lemma _root_.simple_graph.comp_out_mk_mem_hom (G : simple_graph V) {v : V} (vK : v ∈ Kᶜ)
   (h : L ⊆ K) : v ∈ (G.comp_out_mk vK).hom h :=
@@ -187,32 +267,18 @@ subset_hom (G.comp_out_mk vK) h (G.comp_out_mk_mem vK)
 
 lemma hom_eq_iff_le (C : G.comp_out L) (h : K ⊆ L) (D : G.comp_out K) :
   C.hom h = D ↔ (C : set V) ⊆ (D : set V) :=
-begin
-  split,
-  { rintro rfl, exact C.subset_hom h, },
-  { revert C, refine connected_component.ind _,
-    rintro ⟨v, vL⟩ vD,
-    have h₁ : v ∈ ↑D, by
-    { refine set.mem_of_mem_of_subset _ vD,
-      simp only [set.mem_compl_iff, set_like.mem_coe, mem_supp_iff, connected_component.eq],
-      refine ⟨vL, _⟩,
-      refl, },
-    simp only [set.mem_compl_iff, mem_supp_iff, set_like.mem_coe] at h₁,
-    exact h₁.some_spec, },
-end
+⟨ λ h', h' ▸ (C.subset_hom h), C.ind (λ v vnL vD, (vD ⟨vnL, rfl⟩).some_spec) ⟩
 
 lemma hom_eq_iff_not_disjoint (C : G.comp_out L) (h : K ⊆ L) (D : G.comp_out K) :
   C.hom h = D ↔ ¬ disjoint (C : set V) (D : set V) :=
 begin
+  rw set.not_disjoint_iff,
   split,
   { rintro rfl,
-    apply quot.induction_on C,
-    rintro ⟨x,xL⟩,
-    rw set.not_disjoint_iff,
-    exact ⟨x, ⟨xL,rfl⟩, ⟨(λ xK, xL (h xK)), rfl⟩⟩, },
-  { revert C, refine connected_component.ind _,
-    simp_rw set.not_disjoint_iff,
-    rintro _ ⟨x,⟨xL,e₁⟩,⟨xK,rfl⟩⟩,
+    apply C.ind (λ x xnL, _),
+    exact ⟨x, ⟨xnL,rfl⟩, ⟨(λ xK, xnL (h xK)), rfl⟩⟩, },
+  { apply C.ind (λ x xnL, _),
+    rintro ⟨x,⟨_,e₁⟩,⟨_,rfl⟩⟩,
     rw ←e₁, refl, },
 end
 
@@ -222,6 +288,9 @@ by { change C.map _ = C, rw [G.out_hom_refl L, C.map_id], }
 lemma hom_trans (C : G.comp_out L) (h : K ⊆ L) (h' : M ⊆ K) :
   C.hom (h'.trans h) = (C.hom h).hom h' :=
 by { change C.map _ = (C.map _).map _, rw [G.out_hom_trans, C.map_comp], }
+
+lemma hom_mk {v : V} (vnL : v ∉ L) (h : K ⊆ L) :
+  (G.comp_out_mk vnL).hom h = (G.comp_out_mk (set.not_mem_subset h vnL)) := rfl
 
 lemma hom_inf (C : G.comp_out L) (h : K ⊆ L) (Cinf : (C : set V).infinite) :
   (C.hom h : set V).infinite := set.infinite.mono (C.subset_hom h) Cinf
@@ -233,7 +302,7 @@ begin
   split,
   { rintro Cinf L h,
     obtain ⟨v,⟨vK,rfl⟩,vL⟩ := set.infinite.nonempty (set.infinite.diff Cinf L.finite_to_set),
-    exact ⟨connected_component_mk _ ⟨v,vL⟩, rfl⟩ },
+    exact ⟨comp_out_mk _ vL, rfl⟩ },
   { rintro h Cfin,
     obtain ⟨D,e⟩ := h (K ∪ Cfin.to_finset) (finset.subset_union_left K Cfin.to_finset),
     obtain ⟨v,vD⟩ := D.nonempty,
@@ -263,6 +332,14 @@ def comp_out_functor : (finset V)ᵒᵖ ⥤ Type u :=
 /-- The end of a graph, defined as the sections of the functor `comp_out_functor` . -/
 @[protected]
 def «end» := (comp_out_functor G).sections
+
+lemma end_hom_mk_of_mk {s} (sec : s ∈ G.end) {K L : (finset V)ᵒᵖ} (h : L ⟶ K)
+  {v : V} (vnL : v ∉ L.unop) (hs : s L = G.comp_out_mk vnL) :
+  s K = G.comp_out_mk (set.not_mem_subset (le_of_op_hom h) vnL) :=
+begin
+  rw [←(sec h), hs],
+  apply comp_out.hom_mk,
+end
 
 end ends
 
