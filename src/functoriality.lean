@@ -83,12 +83,13 @@ theorem infty_iff (f : V → V') {C : ℕ} :
 
 def out_restrict {f : V → V'} {k : ℕ∞} {c : ℕ} (hf : coarse_lipschitz_with G G' k c f) (K : set V) :
   coarse_lipschitz_with (G.out K) G' k c (f ∘ subtype.val) := by {
-    intros x y a h,
+    intros x y a hdist,
     apply hf,
-    sorry, -- can be proved using the fact that `subtype.val` is a homomorphism
-  }
+    refine lt_of_le_of_lt _ hdist,
+    rw [G.val_of_out_val_hom, G.val_of_out_val_hom],
+    apply hom.edist_le, }
 
--- the "relative" version of `out`
+-- the "relative" version of `out_restrict`
 def out'_restrict {K K' : set V} (h : K ⊆ K') {f : ↥(K)ᶜ → V'} {k : ℕ∞} {c : ℕ}
   (hf : coarse_lipschitz_with (G.out K) G' k c f) :
     coarse_lipschitz_with (G.out K') G' k c (f ∘ (simple_graph.out_hom G h).to_fun) := by {

@@ -135,6 +135,18 @@ lemma out_hom_injective {K} {L} (h : K ⊆ L) : function.injective (G.out_hom h)
 by { rintros ⟨v, _⟩ ⟨w, _⟩ e,
      simpa only [out_hom, subtype.mk_eq_mk, rel_hom.coe_fn_mk] using e, }
 
+def out_val_hom : G.out K ↪g G := 
+{ to_fun := subtype.val,
+  inj' := subtype.val_injective,
+  map_rel_iff' := by {
+    simp only [function.embedding.coe_fn_mk, subtype.val_eq_coe, comap_adj, 
+    function.embedding.coe_subtype, iff_self, set_coe.forall,
+  implies_true_iff],
+  } }
+
+theorem val_of_out_val_hom {v : ↥Kᶜ} : 
+  v.val = (out_val_hom G K : G.out K →g G) v := rfl
+
 end out
 
 /-- The components outside a given set of vertices `K` -/
