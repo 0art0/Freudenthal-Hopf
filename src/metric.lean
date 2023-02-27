@@ -27,6 +27,7 @@ lemma coe_ennreal_inj {n m : ℕ∞} : (↑n : ℝ≥0∞) = ↑m ↔ n = m := s
 @[simp] lemma top_mul_right {a : ℕ∞} : a * ⊤ = ⊤ := sorry
 @[simp] lemma top_add_left {a : ℕ∞} : ⊤ + a = ⊤ := sorry
 @[simp] lemma top_add_right {a : ℕ∞} : a + ⊤ = ⊤ := sorry      
+lemma ne_top_iff_lt_top {a : ℕ∞} : a ≠ ⊤ ↔ a < ⊤ := sorry   
 
 end enat
 
@@ -64,6 +65,10 @@ end
 lemma reachable_iff_edist_ne_top {u v : V} :
   G.reachable u v ↔ G.edist u v ≠ ⊤ :=
 by rw [←not_iff_not, not_reachable_iff_edist_eq_top, not_not]
+
+lemma reachable_iff_edist_lt_top {u v : V} :
+  G.reachable u v ↔ G.edist u v < ⊤ :=
+by rw [reachable_iff_edist_ne_top, enat.ne_top_iff_lt_top]
 
 lemma exists_walk_iff_edist_ne_top {u v : V} :
   (∃ (p : G.walk u v), (p.length : ℕ∞) = G.edist u v) ↔ G.edist u v ≠ ⊤ :=

@@ -68,13 +68,17 @@ end
 
 theorem infty_iff (f : V → V') {C : ℕ} :
   (coarse_lipschitz_with G G' ⊤ C f) ↔ (∀ x y : V, G.reachable x y → G'.reachable (f x) (f y)) := by {
-    have : ∀ (K : ℕ∞) (n : ℕ), ⊤ * K + n = ⊤ := by {
-      intros K n,
-      sorry -- needs missing `enat` lemmas
-      },
-    simp_rw [simple_graph.reachable_iff_edist_ne_top,
-      coarse_lipschitz_with, this],
-    sorry -- should be easy enough from here
+    simp_rw [simple_graph.reachable_iff_edist_lt_top],
+    split,
+    { intros hcoarse x y hdist,
+      refine lt_of_le_of_lt' _ (hcoarse hdist),
+      simp only [enat.top_mul_right, enat.top_add_left, top_le_iff],
+    },
+    { intros hreach _ _ _ hdist,
+      simp only [enat.top_mul_left, enat.top_add_left],
+      apply hreach,
+      exact lt_of_le_of_lt' le_top hdist,
+     }
   }
 
 def out_restrict {f : V → V'} {k : ℕ∞} {c : ℕ} (hf : coarse_lipschitz_with G G' k c f) (K : set V) :
