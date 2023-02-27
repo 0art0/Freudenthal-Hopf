@@ -101,11 +101,8 @@ def expand_out {L L' : set V'} (h : L ⊆ L') {f : V → ↥L'ᶜ} {k : ℕ∞} 
   (hf : coarse_lipschitz_with G (G'.out L') k c f) :
   coarse_lipschitz_with G (G'.out L) k c ((induce_out id h) ∘ f) :=
   -- TODO maybe replace `induce_out id h`
-    by {
-      intros _ _ a h,
-      have := hf h,
-      all_goals {sorry}, -- will follow from the fact that `induce_out id h` is a homomorphism
-    }
+    by { intros _ _ a hdist,
+      exact lt_of_le_of_lt (hom.edist_le (induce_out_hom hom.id h) (f x) (f y)) (hf hdist), }
 
 def comp_map {f : V → V'} {k : ℕ∞} {c : ℕ} (hf : coarse_lipschitz_with G G' k c f) :
   G.connected_component → G'.connected_component :=
