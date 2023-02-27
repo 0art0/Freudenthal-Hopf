@@ -110,8 +110,7 @@ def comp_map {f : V → V'} {k : ℕ∞} {c : ℕ} (hf : coarse_lipschitz_with G
       intros _ _ p _,
       rw simple_graph.connected_component.eq,
       apply (infty_iff f).mp,
-      refine mono _ (nat.le_refl c) hf,
-      sorry{exact le_top}, -- not working for some reason
+      refine mono le_top (nat.le_refl c) hf,
       exact nonempty.intro p, })
 
 -- this could potentially be stated better using an "absolute" rather than a "relative" perspective
