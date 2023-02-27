@@ -23,6 +23,10 @@ lemma add_le_add {n n' m m' : ℕ∞} (hn : n ≤ n') (hm : m ≤ m') : n + m �
 lemma lt_add_one_iff_le {n m : ℕ∞} (h : m ≠ ⊤) : n < m + 1 ↔ n ≤ m  := sorry
 lemma mul_right_le {a b c : ℕ∞} (h : a ≤ b) : a * c ≤ b * c := sorry
 lemma coe_ennreal_inj {n m : ℕ∞} : (↑n : ℝ≥0∞) = ↑m ↔ n = m := sorry
+@[simp] lemma top_mul_left {a : ℕ∞} : ⊤ * a = ⊤ := by sorry
+@[simp] lemma top_mul_right {a : ℕ∞} : a * ⊤ = ⊤ := sorry
+@[simp] lemma top_add_left {a : ℕ∞} : ⊤ + a = ⊤ := sorry
+@[simp] lemma top_add_right {a : ℕ∞} : a + ⊤ = ⊤ := sorry      
 
 end enat
 

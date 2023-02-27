@@ -11,7 +11,7 @@ open simple_graph
 
 @[reducible]
 def coarse_lipschitz_with (K : ℕ∞) (C : ℕ) (f : V → V') :=
-  ∀ ⦃x y : V⦄, ∀ a : ℕ∞, G.edist x y < a → G'.edist (f x) (f y) < K * a + C
+  ∀ ⦃x y : V⦄, ∀ ⦃a : ℕ∞⦄, G.edist x y < a → G'.edist (f x) (f y) < K * a + C
 
 def coarse_equal_with (K : ℕ∞) (f g : V → V'):=
   ∀ x : V, G'.edist (f x) (g x) < K
@@ -38,20 +38,31 @@ theorem mono {f : V → V'} {K K' : ℕ∞} {C C' : ℕ} (hK : K ≤ K') (hC : C
   : coarse_lipschitz_with G G' K' C' f := by {
     rw [coarse_lipschitz_with],
     intros x y a hdist,
-    refine lt_of_le_of_lt' _ (hf a hdist),
+    refine lt_of_le_of_lt' _ (hf hdist),
     exact add_le_add (enat.mul_right_le hK) (with_top.coe_mono hC),
   }
 
 theorem comp (f : V → V') (g : V' → V'')
   {K K' : ℕ∞} {C C' : ℕ}
   (hf : coarse_lipschitz_with G G' K C f) (hg : coarse_lipschitz_with G' G'' K' C' g)
-  : coarse_lipschitz_with G G'' (K * K') (K'.to_nat * C + C') (g ∘ f) := by {
-    sorry
+  : coarse_lipschitz_with G G'' (K' * K) (K'.to_nat * C + C') (g ∘ f) := by {
+    intros _ _ a hdist,
+    refine lt_of_le_of_lt' _ (hg (hf hdist)),
+    rw [enat.coe_add, ← add_assoc, mul_add, ← mul_assoc, enat.coe_mul],
+    refine add_le_add _ (le_refl _),
+    by_cases h : K' = ⊤,
+    { subst h,
+      simp only [enat.top_mul_left, enat.top_add_left, top_le_iff], },
+    { rw [(enat.coe_to_nat_eq_self).mpr h],
+      exact le_refl _, }
   }
 
 theorem infty_wlog {P : (V → V') → Sort*} (C : ℕ) :
-  ∀ (f : V → V') (K : ℕ∞) (hf : coarse_lipschitz_with G G' K C f), P f ↔
-  ∀ (f : V → V') (hf : coarse_lipschitz_with G G' ⊤ C f), P f := sorry
+  (∀ (f : V → V') (K : ℕ∞) (hf : coarse_lipschitz_with G G' K C f), P f) ↔
+  (∀ (f : V → V') (hf : coarse_lipschitz_with G G' ⊤ C f), P f) :=
+begin
+  sorry,
+end
 
 theorem infty_iff (f : V → V') {C : ℕ} :
   (coarse_lipschitz_with G G' ⊤ C f) ↔ (∀ x y : V, G.reachable x y → G'.reachable (f x) (f y)) := by {
