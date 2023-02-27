@@ -17,13 +17,11 @@ open_locale ennreal
 
 namespace enat
 
-instance : ordered_cancel_add_comm_monoid ℕ∞ := sorry
-
 lemma add_one_lt_add_one {a b : ℕ∞} (ab : a < b) : a + 1 < b + 1 := sorry
 lemma le_add (n m : ℕ∞) : n ≤ n + m := sorry
-lemma add_le_add {n n' m m' : ℕ∞} (hn : n ≤ n') (hm : m ≤ m') : n + m ≤ n' + m' := sorry
+lemma add_le_add {n n' m m' : ℕ∞} (hn : n ≤ n') (hm : m ≤ m') : n + m ≤ n' + m' := add_le_add hn hm
 lemma lt_add_one_iff_le {n m : ℕ∞} (h : m ≠ ⊤) : n < m + 1 ↔ n ≤ m  := sorry
-
+lemma mul_right_le {a b c : ℕ∞} (h : a ≤ b) : a * c ≤ b * c := sorry
 lemma coe_ennreal_inj {n m : ℕ∞} : (↑n : ℝ≥0∞) = ↑m ↔ n = m := sorry
 
 end enat

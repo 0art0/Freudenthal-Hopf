@@ -38,9 +38,8 @@ theorem mono {f : V → V'} {K K' : ℕ∞} {C C' : ℕ} (hK : K ≤ K') (hC : C
   : coarse_lipschitz_with G G' K' C' f := by {
     rw [coarse_lipschitz_with],
     intros x y a hdist,
-    apply lt_trans (hf a hdist),
-    -- refine add_lt_add _ _,
-    all_goals {sorry}
+    refine lt_of_le_of_lt' _ (hf a hdist),
+    exact add_le_add (enat.mul_right_le hK) (with_top.coe_mono hC),
   }
 
 theorem comp (f : V → V') (g : V' → V'')
