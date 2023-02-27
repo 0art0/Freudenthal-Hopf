@@ -92,10 +92,9 @@ def out_restrict {f : V → V'} {k : ℕ∞} {c : ℕ} (hf : coarse_lipschitz_wi
 def out'_restrict {K K' : set V} (h : K ⊆ K') {f : ↥(K)ᶜ → V'} {k : ℕ∞} {c : ℕ}
   (hf : coarse_lipschitz_with (G.out K) G' k c f) :
     coarse_lipschitz_with (G.out K') G' k c (f ∘ (simple_graph.out_hom G h).to_fun) := by {
-      intros x y a h,
+      intros x y a hdist,
       apply hf,
-      sorry -- should follow from transitivity
-    }
+      exact lt_of_le_of_lt (hom.edist_le (G.out_hom h) x y) hdist, }
 
 def expand_out {L L' : set V'} (h : L ⊆ L') {f : V → ↥L'ᶜ} {k : ℕ∞} {c : ℕ}
   (hf : coarse_lipschitz_with G (G'.out L') k c f) :
