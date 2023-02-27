@@ -17,6 +17,8 @@ open_locale ennreal
 
 namespace enat
 
+instance : ordered_cancel_add_comm_monoid ℕ∞ := sorry
+
 lemma add_one_lt_add_one {a b : ℕ∞} (ab : a < b) : a + 1 < b + 1 := sorry
 lemma le_add (n m : ℕ∞) : n ≤ n + m := sorry
 lemma add_le_add {n n' m m' : ℕ∞} (hn : n ≤ n') (hm : m ≤ m') : n + m ≤ n' + m' := sorry
@@ -199,6 +201,16 @@ begin
     apply set.fintype_union, },
 end
 
+@[reducible]
+def open_ball (G : simple_graph V) (v : V) (n : ℕ∞) := {u | G.edist u v < n}
+
+lemma open_ball_zero_eq_empty (v : V) : G.open_ball v 0 = ∅ :=
+by { sorry }
+
+lemma open_ball_succ_eq  (v : V) (n : ℕ∞) :
+  G.open_ball v (n+1) = G.open_ball v n ∪ (⋃ u ∈ G.open_ball v n, G.neighbor_set u) :=
+    sorry
+
 variables {G} {G'}
 
 lemma hom.edist_le (φ : G →g G') (x y : V) : G'.edist (φ x) (φ y) ≤ G.edist x y :=
@@ -248,6 +260,14 @@ begin
   apply set.finite.bUnion fs (λ u us, _),
   exact ⟨simple_graph.fintype_closed_ball u n⟩,
 end
+
+@[reducible]
+def open_neighborhood (s : set V) (n : ℕ∞) :=
+  ⋃ v ∈ s, G.open_ball v n
+
+lemma subset_open_neighborhood (s : set V) (n : ℕ∞) :
+  s ⊆ G.open_neighborhood s n := sorry
+  
 
 def path_metric (G : simple_graph V) := V
 
