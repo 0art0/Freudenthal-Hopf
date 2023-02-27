@@ -26,18 +26,21 @@ protected theorem id : coarse_lipschitz_with G G 1 0 id := by {
 }
 
 theorem hom (φ : G →g G') : coarse_lipschitz_with G G' 1 0 φ := by {
-  intro,
-  simp [coarse_lipschitz_with, simple_graph.hom.edist_le],
-  sorry, -- transitivity
-}
+  intros x y a h,
+  cases le_iff_lt_or_eq.mp (simple_graph.hom.edist_le φ x y) with 
+    hedist_lt hedist_eq,
+  { simp only [one_mul, algebra_map.coe_zero, add_zero],
+    exact lt_trans hedist_lt h, },
+  { simp only [h, hedist_eq, one_mul, algebra_map.coe_zero, add_zero], }}
 
 theorem mono {f : V → V'} {K K' : ℕ∞} {C C' : ℕ} (hK : K ≤ K') (hC : C ≤ C')
   (hf : coarse_lipschitz_with G G' K C f)
   : coarse_lipschitz_with G G' K' C' f := by {
     rw [coarse_lipschitz_with],
     intros x y a hdist,
-    have := hf a hdist,
-    sorry -- should follow from transitivity
+    apply lt_trans (hf a hdist),
+    -- refine add_lt_add _ _,
+    all_goals {sorry}
   }
 
 theorem comp (f : V → V') (g : V' → V'')
@@ -85,7 +88,7 @@ def expand_out {L L' : set V'} (h : L ⊆ L') {f : V → ↥L'ᶜ} {k : ℕ∞} 
     by {
       intros _ _ a h,
       have := hf a h,
-      sorry, -- will follow from the fact that `induce_out id h` is a homomorphism
+      all_goals {sorry}, -- will follow from the fact that `induce_out id h` is a homomorphism
     }
 
 def comp_map {f : V → V'} {k : ℕ∞} {c : ℕ} (hf : coarse_lipschitz_with G G' k c f) :
@@ -94,7 +97,8 @@ def comp_map {f : V → V'} {k : ℕ∞} {c : ℕ} (hf : coarse_lipschitz_with G
       intros _ _ p _,
       rw simple_graph.connected_component.eq,
       apply (infty_iff f).mp,
-      apply mono le_top (nat.le_refl c) hf,
+      refine mono _ (nat.le_refl c) hf,
+      sorry{exact le_top}, -- not working for some reason
       exact nonempty.intro p, })
 
 -- this could potentially be stated better using an "absolute" rather than a "relative" perspective
@@ -172,11 +176,27 @@ def coarse_map.end_map [decidable_eq V] {f : V → V'} (fcoarse : coarse_map G G
     },
   }
 
+def coarse_close.left_coarse_map {f g : V → V'} (hclose : coarse_close G G' f g) : coarse_map G G' f := 
+{ κ := hclose.κ,
+  C := 0,
+  finset_mapping := hclose.finset_mapping,
+  finset_inv_sub := hclose.finset_inv_subl,
+  induced_coarse_lipschitz := by {
+    intro L,
+    unfold coarse_lipschitz_with,
+    have := hclose.induced_coarse_equal L,
+    unfold coarse_equal_with at this,
+    sorry -- seems impossible, more assumptions needed
+  } }
+
+def coarse_close.right_coarse_map {f g : V → V'} (hclose : coarse_close G G' f g) : coarse_map G G' g := sorry
+
 private lemma well_separated (G : simple_graph V) (Gpc : G.preconnected) (K : finset V) (m : ℕ)
   (C : G.comp_out K)
   (c : V) (cC : c ∈ C) (c' : V) :
   c ∉ (G.closed_neighborhood K m) → G.edist c c' ≤ m → c' ∈ C :=
 begin
+  rintro cnK,
   sorry,
 /-rintro cnK,
   obtain ⟨w,wm⟩ := reachable.exists_walk_of_dist (Gpc c c'), rw ←wm,
@@ -210,7 +230,8 @@ end
 
 def coarse_equal.of_coarse_close [decidable_eq V] {f g : V → V'} {k : ℕ∞}
   (fcoarse : coarse_map G G' f) (gcoarse : coarse_map G G' g)
-  (close : coarse_equal_with G' k f g)  : coarse_close G G' f g := sorry
+  (close : coarse_equal_with G' k f g)  : coarse_close G G' f g := 
+  sorry -- TODO
 
 def coarse_equal.end_equal [decidable_eq V] {f g : V → V'} {k : ℕ∞}
   (fcoarse : coarse_map G G' f) (gcoarse : coarse_map G G' g)
