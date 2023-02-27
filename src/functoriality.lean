@@ -57,11 +57,13 @@ theorem comp (f : V → V') (g : V' → V'')
       exact le_refl _, }
   }
 
-theorem infty_wlog {P : (V → V') → Sort*} (C : ℕ) :
-  (∀ (f : V → V') (K : ℕ∞) (hf : coarse_lipschitz_with G G' K C f), P f) ↔
-  (∀ (f : V → V') (hf : coarse_lipschitz_with G G' ⊤ C f), P f) :=
+def infty_wlog {P : (V → V') → Sort*} (C : ℕ) :
+  (∀ (f : V → V') (hf : coarse_lipschitz_with G G' ⊤ C f), P f) →
+  (∀ (f : V → V') (K : ℕ∞) (hf : coarse_lipschitz_with G G' K C f), P f) :=
 begin
-  sorry,
+  intros h f K hf,
+  apply h,
+  exact mono le_top (le_refl _) hf,
 end
 
 theorem infty_iff (f : V → V') {C : ℕ} :
@@ -97,7 +99,7 @@ def expand_out {L L' : set V'} (h : L ⊆ L') {f : V → ↥L'ᶜ} {k : ℕ∞} 
   -- TODO maybe replace `induce_out id h`
     by {
       intros _ _ a h,
-      have := hf a h,
+      have := hf h,
       all_goals {sorry}, -- will follow from the fact that `induce_out id h` is a homomorphism
     }
 
