@@ -261,7 +261,7 @@ begin
   by_contradiction unC,
   obtain ⟨p⟩ := Gc v u,
   obtain ⟨⟨⟨x, y⟩, xy⟩, d, xC, ynC⟩ :=
-    p.exists_boundary_dart (C : set V) (G.comp_out_mk_mem vnK) unC,
+    p.exists_boundary_dart _ (C : set V) (G.comp_out_mk_mem vnK) unC,
   exact ynC (mem_of_adj x y xC (λ (yK : y ∈ K), h ⟨x, y⟩ xC yK xy) xy),
 end
 

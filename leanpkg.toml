@@ -1,8 +1,8 @@
 [package]
 name = "mathport_translation"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.49.1"
+lean_version = "leanprover-community/lean:3.50.3"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "a7aa4a2e6c4ebadf4974167c7c578772b60431c4"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "1f0096e6caa61e9c849ec2adbd227e960e9dff58"}
