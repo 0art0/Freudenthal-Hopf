@@ -44,46 +44,6 @@ def induce_out (f : V → V')
 
 namespace simple_graph
 
-namespace walk
-
--- Some of this stuff is in `mathlib` already, but is being inserted here to get the code to compiles
-
-/--
-Given a set `S` and a walk `w` from `u` to `v` such that `u ∈ S` but `v ∉ S`,
-there exists a dart in the walk whose start is in `S` but whose end is not.
--/
-lemma exists_boundary_dart
-  {u v : V} (p : G.walk u v) (S : set V) (uS : u ∈ S) (vS : v ∉ S) :
-  ∃ (d : G.dart), d ∈ p.darts ∧ d.fst ∈ S ∧ d.snd ∉ S :=
-begin
-  induction p with _ x y w a p' ih,
-  { exact absurd uS vS },
-  { by_cases h : y ∈ S,
-    { obtain ⟨d, hd, hcd⟩ := ih h vS,
-      exact ⟨d, or.inr hd, hcd⟩ },
-    { exact ⟨⟨(x, y), a⟩, or.inl rfl, uS, h⟩ } }
-end
-
-end walk
-
-section connectivity
-
-/-- The map on connected components induced by a graph homomorphism. -/
-def connected_component.map {G : simple_graph V} {G' : simple_graph V'}
-  (φ : G →g G') (C : G.connected_component) : G'.connected_component :=
-C.lift (λ v, G'.connected_component_mk (φ v)) $ λ v w p _,
-  connected_component.eq.mpr (p.map φ).reachable
-
-@[simp] lemma connected_component.map_id {G : simple_graph V} (C : G.connected_component) : 
-  C.map hom.id = C := by { refine C.ind _, intro _, refl, }
-
-@[simp] lemma connected_component.map_comp
-  {G : simple_graph V} {G' : simple_graph V'} {G'' : simple_graph V''}
-  (C : G.connected_component) (φ : G →g G') (ψ : G' →g G'') : (C.map φ).map ψ = C.map (ψ.comp φ) :=
-by { refine C.ind _, intro _, refl, }
-
-end connectivity
-
 section out
 
 /-- The graph induced by removing `K` -/
@@ -261,7 +221,7 @@ begin
   by_contradiction unC,
   obtain ⟨p⟩ := Gc v u,
   obtain ⟨⟨⟨x, y⟩, xy⟩, d, xC, ynC⟩ :=
-    p.exists_boundary_dart _ (C : set V) (G.comp_out_mk_mem vnK) unC,
+    p.exists_boundary_dart (C : set V) (G.comp_out_mk_mem vnK) unC,
   exact ynC (mem_of_adj x y xC (λ (yK : y ∈ K), h ⟨x, y⟩ xC yK xy) xy),
 end
 
