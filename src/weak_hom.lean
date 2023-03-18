@@ -21,7 +21,7 @@ lemma map_reachable
     λ _ _, φ.map_rel
 
 def from_hom (φ : G →g G') : G ↝g G' :=
-  ⟨φ, λ {a} {b}, sorry⟩ -- TODO `reachable.map φ` works in a newer version of `mathlib`
+  ⟨φ, λ {a} {b} hreach, hreach.elim (λ p, nonempty.intro $ p.map φ)⟩
 
 def component_map (φ : G ↝g G') (C : G.connected_component) : G'.connected_component :=
   C.lift (λ v, simple_graph.connected_component_mk G' (φ v))
