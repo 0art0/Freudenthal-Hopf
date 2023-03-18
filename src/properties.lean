@@ -27,6 +27,18 @@ begin
     ⟨by simp only [opposite.unop_op, finset.coe_univ], h⟩,
 end
 
+section TODO
+
+def induce_univ_iso : G.induce ⊤ ≃g G := sorry
+def connected_component.iso {V V' : Type*} 
+  {G : simple_graph V} {G' : simple_graph V'} : 
+  G ≃g G' → G.connected_component ≃ G'.connected_component := sorry
+theorem component_compl.eq_of_not_disjoint {G : simple_graph V} {K : set V} 
+  (C D : G.component_compl K) :
+  ¬(disjoint (C : set V) (D : set V)) → C = D := sorry
+
+end TODO
+
 /--!
 
 ## Ends of locally finite, connected graphs
@@ -37,24 +49,24 @@ end
 For a locally finite preconnected graph, the number of components outside of any finite set
 is finite.
 -/
-lemma comp_out_finite [locally_finite G] (Gpc : preconnected G) (K : finset V) :
-  finite (G.comp_out K) :=
+lemma component_compl_finite [locally_finite G] (Gpc : preconnected G) (K : finset V) :
+  finite (G.component_compl K) :=
 begin
   classical,
   rcases K.eq_empty_or_nonempty with h|h,
   -- If K is empty, then removing K doesn't change the graph, which is connected, hence has a
   -- single connected component
-  { cases h, dsimp [comp_out, out],
+  { cases h, dsimp [component_compl],
     rw set.compl_empty,
     haveI := @finite.of_subsingleton _ Gpc.subsingleton_connected_component,
     exact finite.of_equiv _ (connected_component.iso (induce_univ_iso G)).symm, },
   -- Otherwise, we consider the function `touch` mapping a connected component to one of its
   -- vertices adjacent to `K`.
-  { let touch : G.comp_out K → {v : V | ∃ k : V, k ∈ K ∧ G.adj k v} :=
+  { let touch : G.component_compl K → {v : V | ∃ k : V, k ∈ K ∧ G.adj k v} :=
       λ C, let p := C.exists_adj_boundary_pair Gpc h in
         ⟨p.some.1, p.some.2, p.some_spec.2.1, p.some_spec.2.2.symm⟩,
     -- `touch` is injective
-    have touch_inj : touch.injective := λ C D h', comp_out.eq_of_not_disjoint C D (by
+    have touch_inj : touch.injective := λ C D h', component_compl.eq_of_not_disjoint C D (by
     { rw set.not_disjoint_iff,
       use touch C,
       exact ⟨ (C.exists_adj_boundary_pair Gpc h).some_spec.1,
@@ -75,16 +87,18 @@ end
 /--
 In an infinite graph, the set of components out of a finite set is nonempty.
 -/
-lemma comp_out_nonempty_of_infinite [infinite V] (K : finset V) : nonempty (G.comp_out K) :=
+lemma component_compl_nonempty_of_infinite [infinite V] (K : finset V) : nonempty (G.component_compl K) :=
 begin
   obtain ⟨k,kK⟩ := set.infinite.nonempty (set.finite.infinite_compl $ K.finite_to_set),
-  exact ⟨comp_out_mk _ kK⟩,
+  exact ⟨component_compl_mk _ kK⟩,
 end
 
+-- TODO: Fix the definitions below using the newer inverse system implementation
+#exit
 /--
-The `comp_out`s chosen by an end are all infinite.
+The `component_compl`s chosen by an end are all infinite.
 -/
-lemma end_comp_out_infinite (e : G.end) (K : (finset V)ᵒᵖ) : (e.val K).supp.infinite :=
+lemma end_component_compl_infinite (e : G.end) (K : (finset V)ᵒᵖ) : (e.val K).supp.infinite :=
 begin
   apply (e.val K).inf_iff_in_all_ranges.mpr (λ L h, _),
   change opposite.unop K ⊆ opposite.unop (opposite.op L) at h,
@@ -98,9 +112,9 @@ lemma nonempty_ends_of_infinite [Glf : locally_finite G] (Gpc : preconnected G) 
   G.end.nonempty :=
 begin
   classical,
-  exact @nonempty_sections_of_fintype_inverse_system _ _ _ G.comp_out_functor
-    (λ K, @fintype.of_finite _ $ G.comp_out_finite Gpc K.unop)
-    (λ K, G.comp_out_nonempty_of_infinite K.unop)
+  exact @nonempty_sections_of_fintype_inverse_system _ _ _ G.component_compl_functor
+    (λ K, @fintype.of_finite _ $ G.component_compl_finite Gpc K.unop)
+    (λ K, G.component_compl_nonempty_of_infinite K.unop)
 end
 
 end simple_graph
