@@ -82,7 +82,7 @@ theorem infty_iff (f : V → V') {C : ℕ} :
   }
 
 def out_restrict {f : V → V'} {k : ℕ∞} {c : ℕ} (hf : coarse_lipschitz_with G G' k c f) (K : set V) :
-  coarse_lipschitz_with (G.out K) G' k c (f ∘ subtype.val) := by {
+  coarse_lipschitz_with (G.induce Kᶜ) G' k c (f ∘ subtype.val) := by {
     intros x y a hdist,
     apply hf,
     refine lt_of_le_of_lt _ hdist,
@@ -134,7 +134,8 @@ theorem comp_down {L L' : finset V'} (h : L ⊆ L') {f : V → ↥(↑L')ᶜ} {k
 
 end coarse_lipschitz
 
--- set_option trace.class_instances true
+def induce_out (f : V → V') {K : set V} {L : set V'} (h : f⁻¹' L ⊆ K) : Kᶜ → Lᶜ :=
+  λ ⟨k, hk⟩, ⟨f k, λ hL, hk (h hL)⟩
 
 /-- The kind of map between graphs which induces a map on the ends. -/
 structure coarse_map {V V' : Type u} (G : simple_graph V) (G' : simple_graph V') (φ : V → V') :=
@@ -142,17 +143,19 @@ structure coarse_map {V V' : Type u} (G : simple_graph V) (G' : simple_graph V')
   (finset_mapping : finset V' → finset V)
   (finset_inv_sub : ∀ L : finset V', φ ⁻¹' (L : set V') ⊆ (finset_mapping L : set V))
   (induced_coarse_lipschitz : ∀ L : finset V',
-    coarse_lipschitz_with (G.out $ finset_mapping L) (G'.out L)
+    coarse_lipschitz_with (G.induce (finset_mapping L)ᶜ) (G'.induce Lᶜ)
       κ C (induce_out φ (finset_inv_sub L)))
+
+
 
 -- TODO maybe there can be a parametrized structure "lifting" any property of homomorphisms
 -- to its coarse version
 structure coarse_close {V V' : Type u} (G : simple_graph V) (G' : simple_graph V') (f g : V → V') :=
   (κ : ℕ∞)
   (finset_mapping : finset V' → finset V)
-  (finset_inv_subl : ∀ L : finset V', f ⁻¹' (L : set V') ⊆ (finset_mapping L : set V))
-  (finset_inv_subr : ∀ L : finset V', g ⁻¹' (L : set V') ⊆ (finset_mapping L : set V))
-  (induced_coarse_equal : ∀ L : finset V', coarse_equal_with (G'.out L) κ
+  (finset_inv_subl : ∀ L : finset V', f⁻¹' (L : set V') ⊆ (finset_mapping L : set V))
+  (finset_inv_subr : ∀ L : finset V', g⁻¹' (L : set V') ⊆ (finset_mapping L : set V))
+  (induced_coarse_equal : ∀ L : finset V', coarse_equal_with (G'.induce Lᶜ) κ
     (induce_out f (finset_inv_subl L)) (induce_out g (finset_inv_subr L)))
 
 variables {G} {G'}
